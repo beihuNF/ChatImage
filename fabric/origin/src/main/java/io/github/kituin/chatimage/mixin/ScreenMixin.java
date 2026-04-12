@@ -245,21 +245,23 @@ public abstract class ScreenMixin extends AbstractParentElement implements Drawa
         setScreen(this.client, (Screen) (Object) this);
     }
 
-    @Inject(at = @At("RETURN"),
-            method = "handleTextClick", cancellable = true)
-    private void handleTextClick(Style style, CallbackInfoReturnable<Boolean> cir) {
-        if (style != null && style.getHoverEvent() != null) {
-            HoverEvent hoverEvent = style.getHoverEvent();
+// IF < fabric-1.21.11
+//    @Inject(at = @At("RETURN"),
+//            method = "handleTextClick", cancellable = true)
+//    private void handleTextClick(Style style, CallbackInfoReturnable<Boolean> cir) {
+//        if (style != null && style.getHoverEvent() != null) {
+//            HoverEvent hoverEvent = style.getHoverEvent();
 // IF >=fabric-1.21.5
 //            if (!(hoverEvent instanceof ShowImage(ChatImageCode code)))return;
 // ELSE
 //             ChatImageCode code = hoverEvent.getValue(SHOW_IMAGE);
 // END IF
-            if (code != null && code.isNsfw() && !ClientStorage.ContainNsfw(code.getUrl()) && !CONFIG.nsfw) {
-                this.nsfwUrl = code.getUrl();
-                setScreen(this.client, new ConfirmNsfwScreen(this::confirmNsfw, nsfwUrl));
-                cir.setReturnValue(true);
-            }
-        }
-    }
+//            if (code != null && code.isNsfw() && !ClientStorage.ContainNsfw(code.getUrl()) && !CONFIG.nsfw) {
+//                this.nsfwUrl = code.getUrl();
+//                setScreen(this.client, new ConfirmNsfwScreen(this::confirmNsfw, nsfwUrl));
+//                cir.setReturnValue(true);
+//            }
+//        }
+//    }
+// END IF
 }

@@ -130,6 +130,12 @@ public class #kituin$ChatComponentMixinClass# {
                 for (Object arg : args) {
                     argTexts.add(this.chatimage$replaceMessage((#Component#) arg));
                 }
+// IF >= fabric-1.19.4 || >= neoforge-1.20.2
+//                String fallback = ttc.getFallback();
+//                if (fallback != null) {
+//                    return #Component#.translatableWithFallback(key, fallback, argTexts.toArray()).setStyle(style);
+//                }
+// END IF
                 return createTranslatableComponent(key, argTexts.toArray()).setStyle(style);
             }
         } else {
@@ -215,6 +221,12 @@ public class #kituin$ChatComponentMixinClass# {
             for (Object arg : args) {
                 argsNew.add(chatImage$flattenTree(arg, mergedText, false));
             }
+// IF >= fabric-1.19.4 || >= neoforge-1.20.2
+//            String fallback = ttc.getFallback();
+//            if (fallback != null) {
+//                return #Component#.translatableWithFallback(ttc.getKey(), fallback, argsNew.toArray()).setStyle(tempStyle);
+//            }
+// END IF
             return createTranslatableComponent(ttc.getKey(), argsNew.toArray()).setStyle(tempStyle);
         } else {
             String t = chatImage$getText(chatImage$getContents(node));
