@@ -17,6 +17,8 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 // IF >= fabric-1.20.5
 //import io.github.kituin.chatimage.network.FileChannelPacket;
 // END IF
@@ -52,18 +54,49 @@ public class ChatImageClientAdapter implements IClientAdapter {
     @Override
     public ChatImageFrame.TextureReader<Identifier> loadTexture(InputStream image) throws IOException {
         NativeImage nativeImage = NativeImage.read(image);
-        return new ChatImageFrame.TextureReader<>(
+// IF >= fabric-1.21.5
+//        MinecraftClient client = MinecraftClient.getInstance();
+//        if (client.isOnThread()) {
+//            return registerTexture(nativeImage);
+//        }
+//
+//        CompletableFuture<ChatImageFrame.TextureReader<Identifier>> result = new CompletableFuture<>();
+//        client.execute(() -> {
+//            try {
+//                result.complete(registerTexture(nativeImage));
+//            } catch (Throwable throwable) {
+//                result.completeExceptionally(throwable);
+//            }
+//        });
+//
+//        try {
+//            return result.join();
+//        } catch (CompletionException exception) {
+//            nativeImage.close();
+//            throw new IOException("Failed to initialize dynamic image texture", exception.getCause());
+//        }
+// ELSE
+//        return new ChatImageFrame.TextureReader<>(
 // IF >= fabric-1.21.4
 //                registerDynamicTexture(
 // ELSE
 //                         MinecraftClient.getInstance().getTextureManager().registerDynamicTexture(
 // END IF
-                        MOD_ID + "/chatimage",
-                        new NativeImageBackedTexture(nativeImage)),
-                nativeImage.getWidth(),
-                nativeImage.getHeight()
-        );
+//                        MOD_ID + "/chatimage",
+//                        new NativeImageBackedTexture(nativeImage)),
+//                nativeImage.getWidth(),
+//                nativeImage.getHeight()
+//        );
+// END IF
     }
+
+// IF >= fabric-1.21.5
+//    private ChatImageFrame.TextureReader<Identifier> registerTexture(NativeImage nativeImage) {
+//        NativeImageBackedTexture texture = new NativeImageBackedTexture(nativeImage);
+//        Identifier identifier = registerDynamicTexture(MOD_ID + "/chatimage", texture);
+//        return new ChatImageFrame.TextureReader<>(identifier, nativeImage.getWidth(), nativeImage.getHeight());
+//    }
+// END IF
 
     @Override
     public void sendToServer(String url, File file, boolean isToServer) {
