@@ -49,7 +49,7 @@ dependencies {
     // Fabric API. This is technically optional, but you probably want it anyway.
     // modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 // IF >= fabric-1.21.9
-//    includeMod "fabric-api", fabricApi.module("fabric-resource-loader-v1", project.fabric_version)
+    includeMod "fabric-api", fabricApi.module("fabric-resource-loader-v1", project.fabric_version)
 // ELSE
 //    includeMod "fabric-api", fabricApi.module("fabric-resource-loader-v0", project.fabric_version)
 // END IF
