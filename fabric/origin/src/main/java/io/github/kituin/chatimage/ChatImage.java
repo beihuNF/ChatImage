@@ -35,7 +35,14 @@ public class ChatImage implements ModInitializer {
 
     @Override
     public void onInitialize() {
-// IF >= fabric-1.20.5
+// IF >= fabric-26.1
+//       PayloadTypeRegistry.serverboundPlay().register(FileChannelPacket.ID, FileChannelPacket.CODEC);
+//       PayloadTypeRegistry.serverboundPlay().register(FileInfoChannelPacket.ID, FileInfoChannelPacket.CODEC);
+//       PayloadTypeRegistry.clientboundPlay().register(DownloadFileChannelPacket.ID, DownloadFileChannelPacket.CODEC);
+//       PayloadTypeRegistry.clientboundPlay().register(FileInfoChannelPacket.ID, FileInfoChannelPacket.CODEC);
+//       ServerPlayNetworking.registerGlobalReceiver(FileChannelPacket.ID, ChatImagePacket::serverFileChannelReceived);
+//       ServerPlayNetworking.registerGlobalReceiver(FileInfoChannelPacket.ID, ChatImagePacket::serverGetFileChannelReceived);
+// ELSE IF >= fabric-1.20.5
 //       PayloadTypeRegistry.playC2S().register(FileChannelPacket.ID, FileChannelPacket.CODEC);
 //       PayloadTypeRegistry.playC2S().register(FileInfoChannelPacket.ID, FileInfoChannelPacket.CODEC);
 //       PayloadTypeRegistry.playS2C().register(DownloadFileChannelPacket.ID, DownloadFileChannelPacket.CODEC);

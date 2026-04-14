@@ -94,6 +94,9 @@
 // ELSE IF fabric-1.21.11
 //    "fabric-command-api-v2": "*",
 //    "minecraft": ["1.21.11"]
+// ELSE IF fabric-26.1
+//    "fabric-command-api-v2": "*",
+//    "minecraft": ["26.1", "26.1.1", "26.1.2"]
 // END IF
   }
 }
