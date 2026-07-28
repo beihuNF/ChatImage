@@ -16,9 +16,11 @@ repositories {
     }
 }
 
+def unobfuscatedMinecraft = project.minecraft_version.tokenize('.')[0].toInteger() >= 26
+
 ext.includeMod = { String localOverrideKey, Object dep ->
     File file = file("../.${localOverrideKey}-local");
-    if (file.exists()) {
+    if (unobfuscatedMinecraft || file.exists()) {
         dependencies.implementation(dep)
     } else {
         dependencies.modImplementation(dep)
@@ -39,30 +41,47 @@ def mod_version = getVersionFromFile('../../version.txt')
 version = mod_version + "+" + project.minecraft_version + "+fabric"
 group = project.maven_group
 
-def targetJavaVersion = project.targetJavaVersion.toInteger()
+def targetJavaVersion = unobfuscatedMinecraft ? 25 : project.targetJavaVersion.toInteger()
+
+if (unobfuscatedMinecraft) {
+    sourceSets.main.java.setSrcDirs([
+            "../../version-overlays/fabric-26.x/src/main/java",
+            "../../version-overlays/fabric-26.1/src/main/java"
+    ])
+} else if (project.minecraft_version == "1.21.11") {
+    sourceSets.main.java.srcDir("../../version-overlays/fabric-1.21.11/src/main/java")
+}
+
 dependencies {
     // To change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    if (!unobfuscatedMinecraft) {
+        mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+        modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    } else {
+        implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    }
 
-    // Fabric API. This is technically optional, but you probably want it anyway.
-    // modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+// Fabric API. This is technically optional, but you probably want it anyway.
+// modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 // IF >= fabric-1.21.9
 //    includeMod "fabric-api", fabricApi.module("fabric-resource-loader-v1", project.fabric_version)
 // ELSE
 //    includeMod "fabric-api", fabricApi.module("fabric-resource-loader-v0", project.fabric_version)
 // END IF
     includeMod "fabric-api", fabricApi.module("fabric-api-base", project.fabric_version)
-    includeMod "fabric-api", fabricApi.module("fabric-key-binding-api-v1", project.fabric_version)
+    includeMod "fabric-api", fabricApi.module(unobfuscatedMinecraft ? "fabric-key-mapping-api-v1" : "fabric-key-binding-api-v1", project.fabric_version)
     includeMod "fabric-api", fabricApi.module("fabric-networking-api-v1", project.fabric_version)
     includeMod "fabric-api", fabricApi.module(project.command_api, project.fabric_version)
     includeMod "fabric-api", fabricApi.module("fabric-lifecycle-events-v1", project.fabric_version)
-    include modImplementation("io.github.kituin:ChatImageCode:${code_version}")
-
-    include modImplementation("io.github.kituin:ActionLib:${project.action_version}-fabric")
-
-    modApi("com.terraformersmc:modmenu:${project.modmenu_version}") { transitive false }
+    if (unobfuscatedMinecraft) {
+        include implementation("io.github.kituin:ChatImageCode:${code_version}")
+        compileOnly("com.terraformersmc:modmenu:${project.modmenu_version}") { transitive false }
+    } else {
+        include modImplementation("io.github.kituin:ChatImageCode:${code_version}")
+        include modImplementation("io.github.kituin:ActionLib:${project.action_version}-fabric")
+        modApi("com.terraformersmc:modmenu:${project.modmenu_version}") { transitive false }
+    }
 }
 
 
@@ -107,7 +126,7 @@ jar {
         rename { "${it}_${project.archives_base_name}" }
     }
 }
-remapJar {
+tasks.named(unobfuscatedMinecraft ? "jar" : "remapJar") {
     archiveBaseName.set(project.archives_base_name)
     destinationDirectory  = file("../../ChatImage-jar/${mod_version}")
 }

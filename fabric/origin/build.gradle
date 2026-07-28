@@ -1,6 +1,18 @@
-plugins {
-    id 'fabric-loom' version '1.14-SNAPSHOT'
-    id 'maven-publish'
+buildscript {
+    repositories {
+        mavenLocal()
+        maven { url = 'https://maven.fabricmc.net/' }
+        gradlePluginPortal()
+    }
+    dependencies {
+        if (rootProject.name == 'fabric-26.1') {
+            classpath 'net.fabricmc:fabric-loom:1.15.5'
+        } else {
+            classpath 'net.fabricmc:fabric-loom:1.14.10'
+        }
+    }
 }
 
+apply plugin: rootProject.name.startsWith('fabric-26.') ? 'net.fabricmc.fabric-loom' : 'fabric-loom'
+apply plugin: 'maven-publish'
 apply from: './fabric.gradle'
