@@ -1,11 +1,18 @@
 #!/usr/bin/env bash
 
-TARGET_LOADER="$1"  # fabric / forge / neoforge
-TARGET_VERSION="$2" # 1.16.5 / 1.18.2 / ...
-RULES_JDK21="$3"    # JDK 21 规则
-RULES_JDK17="$4"    # JDK 17 规则
-RULES_JDK8="$5"     # JDK 8 规则
+set -euo pipefail
 
+TARGET_LOADER="${1:-}"  # fabric / forge / neoforge
+TARGET_VERSION="${2:-}" # 1.16.5 / 1.18.2 / ...
+RULES_JDK21="${3:-}"    # JDK 21 规则
+RULES_JDK17="${4:-}"    # JDK 17 规则
+RULES_JDK8="${5:-}"     # JDK 8 规则
+RULES_JDK25="${6:-}"    # JDK 25 规则
+
+if [[ -z "$TARGET_LOADER" || -z "$TARGET_VERSION" ]]; then
+  echo "Usage: $0 loader version jdk21-rules jdk17-rules jdk8-rules [jdk25-rules]" >&2
+  exit 1
+fi
 
 
 matches_rule() {
@@ -13,7 +20,8 @@ matches_rule() {
   local loader="$TARGET_LOADER"
   local version="$TARGET_VERSION"
   
-  if [[ "$rule" =~ ^([>=]=?)([^-]+)-(.+)$ ]]; then
+  rule="${rule//[[:space:]]/}"
+  if [[ "$rule" =~ ^(=|\>=)([^-]+)-(.+)$ ]]; then
     local op="${BASH_REMATCH[1]}"
     local rule_loader="${BASH_REMATCH[2]}"
     local rule_version="${BASH_REMATCH[3]}"
@@ -28,9 +36,14 @@ matches_rule() {
   return 1
 }
 
-# **按照 JDK 21 → JDK 17 → JDK 8 顺序匹配**
-for jdk in 21 17 8; do
-  eval "RULES=\$RULES_JDK$jdk"
+# 按照 JDK 25 → JDK 21 → JDK 17 → JDK 8 顺序匹配
+for jdk in 25 21 17 8; do
+  case "$jdk" in
+    25) RULES="$RULES_JDK25" ;;
+    21) RULES="$RULES_JDK21" ;;
+    17) RULES="$RULES_JDK17" ;;
+    8) RULES="$RULES_JDK8" ;;
+  esac
   IFS=',' read -ra RULES_ARRAY <<< "$RULES"
   for rule in "${RULES_ARRAY[@]}"; do
     if matches_rule "$rule"; then

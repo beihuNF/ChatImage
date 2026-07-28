@@ -5,7 +5,9 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        if (rootProject.name == 'fabric-26.1') {
+        if (rootProject.name == 'fabric-26.2') {
+            classpath 'net.fabricmc:fabric-loom:1.17.17'
+        } else if (rootProject.name == 'fabric-26.1') {
             classpath 'net.fabricmc:fabric-loom:1.15.5'
         } else {
             classpath 'net.fabricmc:fabric-loom:1.14.10'

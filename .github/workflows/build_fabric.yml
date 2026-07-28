@@ -1,67 +1,97 @@
-name: 测试Fabric(jar)
+name: 发布 Fabric（三版本）
 
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
 
 permissions:
   contents: write
-env:
-  JAVA_21_RULE: ">=fabric-1.20.5,>=neoforge-1.20.2"
-  JAVA_17_RULE: ">=fabric-1.16.5,>=forge-1.17"
-  JAVA_8_RULE: "=forge-1.16.5"
+
 jobs:
-
-  generate-matrix:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Generate Matrix
-        id: set-matrix
-        run: |
-          chmod 777 matrix.sh
-          ./matrix.sh -path "fabric"
-
   build:
     runs-on: ubuntu-latest
-    needs: generate-matrix
     strategy:
-      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+      fail-fast: false
+      matrix:
+        include:
+          - minecraft: "1.21.11"
+            java: "21"
+          - minecraft: "26.1"
+            java: "25"
+          - minecraft: "26.2"
+            java: "25"
     steps:
-      - uses: actions/checkout@v4
-      - name: Get JDK Version
-        run: chmod 777 jdk_rules.sh && ./jdk_rules.sh "${{ matrix.config.mc-loader }}" "${{ matrix.config.mc-version }}" "${{ env.JAVA_21_RULE }}" "${{ env.JAVA_17_RULE }}" "${{ env.JAVA_8_RULE }}"
+      - uses: actions/checkout@v7
 
-      - name: Chose JDK
-        uses: actions/setup-java@v4
+      - name: Set up Java ${{ matrix.java }}
+        uses: actions/setup-java@v5
         with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: 'temurin'
+          distribution: temurin
+          java-version: ${{ matrix.java }}
 
-      - name: Read version.txt and save to variable
+      - name: Read mod version
+        run: echo "MOD_VERSION=$(<version.txt)" >> "$GITHUB_ENV"
+
+      - name: Initialize generated projects
         run: |
-          mod_version=$(cat version.txt)
-          echo "Version: $mod_version"
-          echo "MOD_VERSION=$mod_version" >> "$GITHUB_ENV"
-      - name: Init Files
-        run: |
-          chmod 777 init.sh && ./init.sh
+          chmod +x init.sh
+          ./init.sh
+
       - name: Cache Gradle packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ matrix.config.mc-version }}+${{ matrix.config.mc-loader }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          key: fabric-${{ matrix.minecraft }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
-            ${{ matrix.config.mc-version }}+${{ matrix.config.mc-loader }}-gradle-
-      - name: Build
+            fabric-${{ matrix.minecraft }}-gradle-
+
+      - name: Build Fabric ${{ matrix.minecraft }}
+        working-directory: fabric/fabric-${{ matrix.minecraft }}
         run: |
-          cd ${{ matrix.config.mc-loader }}/${{ matrix.config.mc-loader }}-${{ matrix.config.mc-version }}
-          chmod 777 gradlew && ./gradlew clean build
-          cd ../..
-      - uses: actions/upload-artifact@v4
+          chmod +x gradlew
+          ./gradlew clean build --no-daemon
+
+      - name: Upload Fabric ${{ matrix.minecraft }} artifact
+        uses: actions/upload-artifact@v7
         with:
-          name: ChatImage-${{ env.MOD_VERSION }}+${{ matrix.config.mc-version }}+${{ matrix.config.mc-loader }}.jar
-          path: ChatImage-jar/${{ env.MOD_VERSION }}/ChatImage-${{ env.MOD_VERSION }}+${{ matrix.config.mc-version }}+${{ matrix.config.mc-loader }}.jar
+          name: fabric-${{ matrix.minecraft }}
+          path: ChatImage-jar/${{ env.MOD_VERSION }}/ChatImage-${{ env.MOD_VERSION }}+${{ matrix.minecraft }}+fabric.jar
+          if-no-files-found: error
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download the three Fabric jars
+        uses: actions/download-artifact@v8
+        with:
+          pattern: fabric-*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mod_version=$(<version.txt)
+          tag="v${mod_version}"
+          title="ChatImage ${mod_version} - Fabric"
+
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh api --method PATCH \
+              "repos/${GITHUB_REPOSITORY}/git/refs/tags/${tag}" \
+              -f sha="$GITHUB_SHA" \
+              -F force=true >/dev/null
+            gh release upload "$tag" release-assets/*.jar --clobber
+          else
+            gh release create "$tag" release-assets/*.jar \
+              --target "$GITHUB_SHA" \
+              --title "$title" \
+              --generate-notes
+          fi

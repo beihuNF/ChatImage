@@ -44,9 +44,10 @@ group = project.maven_group
 def targetJavaVersion = unobfuscatedMinecraft ? 25 : project.targetJavaVersion.toInteger()
 
 if (unobfuscatedMinecraft) {
+    def overlayVersion = rootProject.name == "fabric-26.2" ? "26.2" : "26.1"
     sourceSets.main.java.setSrcDirs([
             "../../version-overlays/fabric-26.x/src/main/java",
-            "../../version-overlays/fabric-26.1/src/main/java"
+            "../../version-overlays/fabric-${overlayVersion}/src/main/java"
     ])
 } else if (project.minecraft_version == "1.21.11") {
     sourceSets.main.java.srcDir("../../version-overlays/fabric-1.21.11/src/main/java")

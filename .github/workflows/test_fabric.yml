@@ -1,4 +1,4 @@
-name: 测试Fabric
+name: 测试 Fabric（三版本）
 
 on:
   workflow_dispatch:
@@ -8,68 +8,54 @@ on:
     paths:
       - 'fabric/**'
       - 'origin/**'
-permissions:
-  contents: write
+      - 'version-overlays/**'
+      - 'tool/**'
+      - 'init.sh'
+      - 'version.txt'
+      - '.github/workflows/test_fabric.yml'
 
-env:
-  JAVA_21_RULE: ">=fabric-1.20.5,>=neoforge-1.20.2"
-  JAVA_17_RULE: ">=fabric-1.16.5,>=forge-1.17"
-  JAVA_8_RULE: "=forge-1.16.5"
+permissions:
+  contents: read
 
 jobs:
-
-  generate-matrix:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Generate Matrix
-        id: set-matrix
-        run: |
-          chmod 777 matrix.sh
-          ./matrix.sh -path "fabric"
-      - name: Show
-        run: | 
-          echo ${{ steps.set-matrix.outputs.matrix }}
   test:
     runs-on: ubuntu-latest
-    needs: generate-matrix
     strategy:
-      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+      fail-fast: false
+      matrix:
+        include:
+          - minecraft: "1.21.11"
+            java: "21"
+          - minecraft: "26.1"
+            java: "25"
+          - minecraft: "26.2"
+            java: "25"
     steps:
-      - uses: actions/checkout@v4
-      - name: Get JDK Version
-        run: chmod 777 jdk_rules.sh && ./jdk_rules.sh "${{ matrix.config.mc-loader }}" "${{ matrix.config.mc-version }}" "${{ env.JAVA_21_RULE }}" "${{ env.JAVA_17_RULE }}" "${{ env.JAVA_8_RULE }}"
+      - uses: actions/checkout@v7
 
-      - name: Chose JDK
-        uses: actions/setup-java@v4
+      - name: Set up Java ${{ matrix.java }}
+        uses: actions/setup-java@v5
         with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: 'temurin'
+          distribution: temurin
+          java-version: ${{ matrix.java }}
 
-      - name: Read version.txt and save to variable
+      - name: Initialize generated projects
         run: |
-          mod_version=$(cat version.txt)
-          echo "Version: $mod_version"
-          echo "MOD_VERSION=$mod_version" >> "$GITHUB_ENV"
-      - name: Init Files
-        run: |
-          chmod 777 init.sh && ./init.sh
+          chmod +x init.sh
+          ./init.sh
+
       - name: Cache Gradle packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ matrix.config.mc-version }}+${{ matrix.config.mc-loader }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          key: fabric-${{ matrix.minecraft }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
-            ${{ matrix.config.mc-version }}+${{ matrix.config.mc-loader }}-gradle-
-      - name: Build
+            fabric-${{ matrix.minecraft }}-gradle-
+
+      - name: Build Fabric ${{ matrix.minecraft }}
+        working-directory: fabric/fabric-${{ matrix.minecraft }}
         run: |
-          cd ${{ matrix.config.mc-loader }}/${{ matrix.config.mc-loader }}-${{ matrix.config.mc-version }}
-          chmod 777 gradlew && ./gradlew clean build
-          cd ../..
-      - name: Show Files
-        run: |
-          ls ChatImage-jar/${{ env.MOD_VERSION }}
+          chmod +x gradlew
+          ./gradlew clean build --no-daemon

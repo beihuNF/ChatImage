@@ -8,11 +8,17 @@ on:
     paths:
       - 'neoforge/**'
       - 'origin/**'
+      - 'tool/**'
+      - 'init.sh'
+      - 'matrix.sh'
+      - 'jdk_rules.sh'
+      - 'version.txt'
+      - '.github/workflows/test_neoforge.yml'
 permissions:
-  contents: write
+  contents: read
 
 env:
-  JAVA_21_RULE: ">=fabric-1.20.5,>=neoforge-1.20.2"
+  JAVA_21_RULE: ">=fabric-1.16.5,>=neoforge-1.20.2"
   JAVA_17_RULE: ">=fabric-1.16.5,>=forge-1.17"
   JAVA_8_RULE: "=forge-1.16.5"
 
@@ -27,17 +33,18 @@ jobs:
       - name: Generate Matrix
         id: set-matrix
         run: |
-          chmod 777 matrix.sh && ./matrix.sh -path "neoforge"
+          chmod +x matrix.sh && ./matrix.sh -path "neoforge"
 
   test:
     runs-on: ubuntu-latest
     needs: generate-matrix
     strategy:
+      fail-fast: false
       matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
       - name: Get JDK Version
-        run: chmod 777 jdk_rules.sh && ./jdk_rules.sh "${{ matrix.config.mc-loader }}" "${{ matrix.config.mc-version }}" "${{ env.JAVA_21_RULE }}" "${{ env.JAVA_17_RULE }}" "${{ env.JAVA_8_RULE }}"
+        run: chmod +x jdk_rules.sh && ./jdk_rules.sh "${{ matrix.config.mc-loader }}" "${{ matrix.config.mc-version }}" "${{ env.JAVA_21_RULE }}" "${{ env.JAVA_17_RULE }}" "${{ env.JAVA_8_RULE }}"
 
       - name: Chose JDK
         uses: actions/setup-java@v4
@@ -52,7 +59,7 @@ jobs:
           echo "MOD_VERSION=$mod_version" >> "$GITHUB_ENV"
       - name: Init Files
         run: |
-          chmod 777 init.sh && ./init.sh
+          chmod +x init.sh && ./init.sh
       - name: Cache Gradle packages
         uses: actions/cache@v4
         with:
@@ -65,7 +72,7 @@ jobs:
       - name: Build
         run: |
           cd ${{ matrix.config.mc-loader }}/${{ matrix.config.mc-loader }}-${{ matrix.config.mc-version }}
-          chmod 777 gradlew && ./gradlew clean build
+          chmod +x gradlew && ./gradlew clean build
           cd ../..
       - name: Show Files
         run: |
