@@ -60,6 +60,6 @@ fi
 
 echo "✅ Using JDK $JAVA_VERSION"
 
-if [[ -n "$GITHUB_ENV" ]]; then
+if [[ -n "${GITHUB_ENV:-}" ]]; then
   echo "JAVA_VERSION=$JAVA_VERSION" >> "$GITHUB_ENV"
 fi

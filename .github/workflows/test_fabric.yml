@@ -1,4 +1,4 @@
-name: 测试 Fabric（三版本）
+name: 测试 Fabric
 
 on:
   workflow_dispatch:
@@ -29,6 +29,8 @@ jobs:
           - minecraft: "26.1"
             java: "25"
           - minecraft: "26.2"
+            java: "25"
+          - minecraft: "26.3"
             java: "25"
     steps:
       - uses: actions/checkout@v7

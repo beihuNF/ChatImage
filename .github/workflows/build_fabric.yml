@@ -1,4 +1,4 @@
-name: 发布 Fabric（三版本）
+name: 发布 Fabric
 
 on:
   workflow_dispatch:
@@ -21,6 +21,8 @@ jobs:
           - minecraft: "26.1"
             java: "25"
           - minecraft: "26.2"
+            java: "25"
+          - minecraft: "26.3"
             java: "25"
     steps:
       - uses: actions/checkout@v7
@@ -68,7 +70,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Download the three Fabric jars
+      - name: Download the Fabric jars
         uses: actions/download-artifact@v8
         with:
           pattern: fabric-*
