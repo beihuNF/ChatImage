@@ -1,0 +1,37 @@
+name: 测试 Forge 1.7.10 客户端
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - 'legacy/forge-1.7.10/**'
+      - 'version.txt'
+      - '.github/workflows/test_legacy.yml'
+  pull_request:
+    paths:
+      - 'legacy/forge-1.7.10/**'
+      - 'version.txt'
+      - '.github/workflows/test_legacy.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build and test
+        working-directory: legacy/forge-1.7.10
+        run: ./gradlew build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ChatImage-Forge-1.7.10
+          path: ChatImage-jar/**/*.jar

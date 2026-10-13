@@ -1,0 +1,48 @@
+plugins {
+    id 'java-library'
+    id 'com.gtnewhorizons.retrofuturagradle' version '2.0.6'
+}
+
+group = 'io.github.kituin'
+version = file('../../version.txt').text.trim() + '+1.7.10+forge'
+base.archivesName = 'ChatImage'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+        vendor = JvmVendorSpec.AZUL
+    }
+    withSourcesJar()
+}
+
+minecraft {
+    mcVersion = '1.7.10'
+    username = 'ChatImageDev'
+    injectedTags.put('VERSION', project.version)
+}
+
+tasks.injectTags.configure {
+    outputClassName = 'io.github.kituin.chatimage.legacy.Tags'
+}
+
+repositories { mavenCentral() }
+dependencies { testImplementation 'junit:junit:4.13.2' }
+
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+tasks.test.configure {
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+    systemProperty 'java.awt.headless', 'true'
+}
+tasks.processResources.configure {
+    inputs.property('version', project.version)
+    filesMatching('mcmod.info') { expand(version: project.version) }
+}
+
+tasks.jar.configure { from('LICENSE') }
+
+tasks.register('copyReleaseJar', Copy) {
+    dependsOn tasks.reobfJar
+    from(tasks.reobfJar)
+    into('../../ChatImage-jar/' + file('../../version.txt').text.trim())
+}
+tasks.build.configure { finalizedBy tasks.copyReleaseJar }

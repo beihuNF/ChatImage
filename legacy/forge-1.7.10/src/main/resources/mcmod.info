@@ -1,0 +1,13 @@
+[
+  {
+    "modid": "chatimage",
+    "name": "ChatImage",
+    "description": "Client-side image and GIF previews in chat for Forge 1.7.10 / GTNH.",
+    "version": "${version}",
+    "mcversion": "1.7.10",
+    "url": "https://github.com/kitUIN/ChatImage",
+    "authorList": ["kitUIN"],
+    "credits": "Legacy client port for GTNH",
+    "dependencies": []
+  }
+]

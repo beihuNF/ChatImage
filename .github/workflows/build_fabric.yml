@@ -1,4 +1,4 @@
-name: 发布 Fabric
+name: 发布 Release
 
 on:
   workflow_dispatch:
@@ -64,16 +64,46 @@ jobs:
           path: ChatImage-jar/${{ env.MOD_VERSION }}/ChatImage-${{ env.MOD_VERSION }}+${{ matrix.minecraft }}+fabric.jar
           if-no-files-found: error
 
-  release:
+  build-legacy:
     runs-on: ubuntu-latest
-    needs: build
     steps:
       - uses: actions/checkout@v7
 
-      - name: Download the Fabric jars
+      - name: Set up Java 25
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Read mod version
+        run: echo "MOD_VERSION=$(<version.txt)" >> "$GITHUB_ENV"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build Legacy Forge 1.7.10
+        working-directory: legacy/forge-1.7.10
+        run: |
+          chmod +x gradlew
+          ./gradlew clean build --no-daemon
+
+      - name: Upload Legacy Forge 1.7.10 artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: legacy-1.7.10
+          path: ChatImage-jar/${{ env.MOD_VERSION }}/ChatImage-${{ env.MOD_VERSION }}+1.7.10+forge.jar
+          if-no-files-found: error
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [build, build-legacy]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download all jars
         uses: actions/download-artifact@v8
         with:
-          pattern: fabric-*
+          pattern: '*'
           path: release-assets
           merge-multiple: true
 
@@ -83,7 +113,7 @@ jobs:
         run: |
           mod_version=$(<version.txt)
           tag="v${mod_version}"
-          title="ChatImage ${mod_version} - Fabric"
+          title="ChatImage ${mod_version}"
 
           if gh release view "$tag" >/dev/null 2>&1; then
             gh api --method PATCH \
@@ -91,6 +121,7 @@ jobs:
               -f sha="$GITHUB_SHA" \
               -F force=true >/dev/null
             gh release upload "$tag" release-assets/*.jar --clobber
+            gh release edit "$tag" --title "$title"
           else
             gh release create "$tag" release-assets/*.jar \
               --target "$GITHUB_SHA" \

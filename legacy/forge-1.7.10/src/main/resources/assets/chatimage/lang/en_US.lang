@@ -1,0 +1,12 @@
+codename.chatimage.default=Image
+loading.chatimage.legacy=Loading image…
+error.chatimage.legacy=Image error: %s (click to retry)
+nsfw.chatimage.legacy=This image is marked NSFW. Click to confirm viewing.
+confirm.chatimage.legacy=Show this NSFW image?
+expired.chatimage.legacy=This image preview has expired.
+reload.chatimage.legacy=ChatImage configuration reloaded.
+usage.chatimage.legacy=/chatimage url <url> | send <name> <url> | preview <url> | reload | help
+network.chatimage.legacy=This client version supports HTTP(S) images only.
+cicode.chatimage.legacy=This URL contains CICode delimiters. Use /chatimage url or /chatimage preview instead.
+length.chatimage.legacy=Minecraft 1.7.10 limits chat to 100 characters. Use a shorter URL or /chatimage preview for a local preview.
+world.chatimage.legacy=Join a world before sending an image.

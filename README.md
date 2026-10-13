@@ -70,6 +70,9 @@
 
 ## 兼容性
 
+Forge 1.7.10 / GTNH 客户端适配位于 [legacy/forge-1.7.10](legacy/forge-1.7.10/README.md)。
+该模块目标环境为 GTNH 2.9.0-rc2、Java 25，支持网络图片和 GIF 聊天悬浮预览；已在 GTNH 2.9.0-rc2 整合包实测确认可用。
+
 - ✅[Chat Heads (Mod)](https://modrinth.com/mod/chat-heads)
 - ✅[McBot🔗 (Mod)](https://modrinth.com/mod/mcbot)
 - ✅[ChatBridge - CQCode](https://github.com/TISUnion/ChatBridge)

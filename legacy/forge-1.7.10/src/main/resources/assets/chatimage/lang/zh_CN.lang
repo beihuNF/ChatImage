@@ -1,0 +1,12 @@
+codename.chatimage.default=图片
+loading.chatimage.legacy=正在加载图片…
+error.chatimage.legacy=图片加载失败：%s（点击重试）
+nsfw.chatimage.legacy=此图片标记为 NSFW，点击确认后查看。
+confirm.chatimage.legacy=是否查看此 NSFW 图片？
+expired.chatimage.legacy=此图片预览已过期。
+reload.chatimage.legacy=ChatImage 配置已重载。
+usage.chatimage.legacy=/chatimage url <链接> | send <名称> <链接> | preview <链接> | reload | help
+network.chatimage.legacy=此客户端版本仅支持 HTTP(S) 网络图片。
+cicode.chatimage.legacy=链接包含 CICode 分隔符，请使用 /chatimage url 或 /chatimage preview。
+length.chatimage.legacy=Minecraft 1.7.10 聊天消息最多 100 字符，请缩短链接，或用 /chatimage preview 在本地预览。
+world.chatimage.legacy=请进入世界后再发送图片。

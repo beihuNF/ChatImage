@@ -71,6 +71,9 @@ support display GIF and local image
 
 ## Compatibility
 
+The independent [Forge 1.7.10 client port](legacy/forge-1.7.10/README.md) targets GTNH 2.9.0-rc2 / Java 25.
+It supports network image and GIF chat previews; verified and confirmed working in GTNH 2.9.0-rc2.
+
 - ✅[Chat Heads (Mod)](https://modrinth.com/mod/chat-heads)
 - ✅[McBot🔗 (Mod)](https://modrinth.com/mod/mcbot)
 - ✅[ChatBridge - CQCode](https://github.com/TISUnion/ChatBridge)
